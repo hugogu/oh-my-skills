@@ -29,25 +29,42 @@ TARGET_TOOLS_ORDERED=(
     "Specify"
 )
 
+# 检查 Bash 版本是否支持关联数组
+BASH_SUPPORTS_ASSOC_ARRAY=false
+case "${BASH_VERSION:-}" in
+    [4-9]*)
+        BASH_SUPPORTS_ASSOC_ARRAY=true
+        ;;
+esac
+
 # 工具名称到选项编号的映射（根据实际命令调整）
-declare -A TOOL_TO_NUMBER=(
-    ["Claude Code"]="1"
-    ["Cursor"]="2"
-    ["OpenCode"]="3"
-    ["Trae"]="4"
-    ["Windsurf"]="5"
-    ["GitHub Copilot"]="6"
-    ["Specify"]="7"
-)
+if [ "$BASH_SUPPORTS_ASSOC_ARRAY" = true ]; then
+    declare -A TOOL_TO_NUMBER
+    TOOL_TO_NUMBER["Claude Code"]="1"
+    TOOL_TO_NUMBER["Cursor"]="2"
+    TOOL_TO_NUMBER["OpenCode"]="3"
+    TOOL_TO_NUMBER["Trae"]="4"
+    TOOL_TO_NUMBER["Windsurf"]="5"
+    TOOL_TO_NUMBER["GitHub Copilot"]="6"
+    TOOL_TO_NUMBER["Specify"]="7"
+fi
 
 # 映射显示名称到 specify --ai 参数
-declare -A TOOL_TO_SPECIFY_AI=(
-    ["Claude Code"]="claude"
-    ["Cursor"]="cursor-agent"
-    ["OpenCode"]="opencode"
-    ["Windsurf"]="windsurf"
-    ["GitHub Copilot"]="copilot"
-)
+# 使用普通数组代替关联数组以兼容 Bash 3.2
+TOOL_TO_SPECIFY_AI_KEYS=("Claude Code" "Cursor" "OpenCode" "Windsurf" "GitHub Copilot")
+TOOL_TO_SPECIFY_AI_VALS=("claude" "cursor-agent" "opencode" "windsurf" "copilot")
+
+# 根据工具名获取 specify --ai 参数
+get_specify_ai_param() {
+    local tool_name="$1"
+    for i in "${!TOOL_TO_SPECIFY_AI_KEYS[@]}"; do
+        if [ "${TOOL_TO_SPECIFY_AI_KEYS[$i]}" = "$tool_name" ]; then
+            echo "${TOOL_TO_SPECIFY_AI_VALS[$i]}"
+            return 0
+        fi
+    done
+    return 1
+}
 
 # 解析参数
 TOOLS_FILTER=""
@@ -77,10 +94,10 @@ while [[ $# -gt 0 ]]; do
             echo "用法: $0 [选项]"
             echo ""
             echo "选项:"
-            echo "  --tools <name>    只运行指定工具 (openspec 或 specify)"
+             echo "  --tools <name>    只运行指定工具 (openspec 或 specify)"
             echo "  --commit          自动提交更改到 git"
             echo "  --manual          手动模式（显示需要运行的命令）"
-            echo "  --verbose, -v     显示详细输出"
+            echo "  --verbose, -v     显示详细输出和错误信息"
             echo "  --help, -h        显示此帮助信息"
             echo ""
             echo "模式说明:"
@@ -171,8 +188,9 @@ main() {
 
             local specify_failed=false
             for tool_name in "${TARGET_TOOLS_ORDERED[@]}"; do
-                # Use default empty value if key doesn't exist (for set -u compatibility)
-                local ai_param="${TOOL_TO_SPECIFY_AI[$tool_name]:-}"
+                # 获取 AI 参数（兼容 Bash 3.2）
+                local ai_param
+                ai_param=$(get_specify_ai_param "$tool_name") || true
 
                 # 跳过没有映射的工具
                 if [ -z "$ai_param" ]; then
@@ -181,12 +199,37 @@ main() {
 
                 echo "  → 配置 $tool_name (--ai $ai_param)"
 
-                if ! specify init --here --force --ai "$ai_param" --script sh > /dev/null 2>&1; then
+                local output_file=$(mktemp)
+                local exit_code=0
+
+                if [ "$VERBOSE" = true ]; then
+                    echo ""
+                    echo "     执行命令: specify init --here --force --ai $ai_param --script sh"
+                    echo ""
+                    if ! specify init --here --force --ai "$ai_param" --script sh; then
+                        exit_code=1
+                    fi
+                else
+                    if ! specify init --here --force --ai "$ai_param" --script sh > "$output_file" 2>&1; then
+                        exit_code=1
+                    fi
+                fi
+
+                if [ $exit_code -ne 0 ]; then
                     echo "     [警告] 配置 $tool_name 失败"
+                    if [ "$VERBOSE" = false ] && [ -s "$output_file" ]; then
+                        echo ""
+                        echo "     错误详情:"
+                        head -n 10 "$output_file" | while IFS= read -r line; do
+                            echo "       $line"
+                        done
+                    fi
                     specify_failed=true
                 else
                     echo "     [完成] 配置 $tool_name 成功"
                 fi
+
+                rm -f "$output_file"
             done
 
             if [ "$specify_failed" = true ]; then
@@ -216,10 +259,20 @@ main() {
             else
                 # 交互模式 - 直接运行
                 echo "[交互模式] 请在提示时选择所有需要的工具"
+                if [ "$VERBOSE" = true ]; then
+                    echo ""
+                    echo "verbose 模式已启用，将显示详细输出"
+                    echo ""
+                fi
                 echo ""
-                $cmd || {
+                if ! $cmd; then
+                    echo ""
                     echo "[警告] 执行失败或用户取消"
-                }
+                    if [ "$VERBOSE" = true ]; then
+                        echo ""
+                        echo "提示：使用 --verbose 参数运行脚本可以看到详细的错误输出"
+                    fi
+                fi
             fi
         fi
 
