@@ -14,6 +14,31 @@
 
 set -euo pipefail
 
+# 检查 Bash 版本（需要 4.0+ 以支持关联数组）
+if [ "${BASH_VERSINFO[0]}" -lt 4 ]; then
+    # 尝试查找并使用更新的 bash 版本
+    for bash_path in /usr/local/bin/bash /opt/homebrew/bin/bash; do
+        if [ -x "$bash_path" ]; then
+            bash_version=$("$bash_path" -c 'echo ${BASH_VERSINFO[0]}')
+            if [ "$bash_version" -ge 4 ]; then
+                echo "检测到旧版 Bash ($BASH_VERSION)，自动切换到 $bash_path"
+                exec "$bash_path" "$0" "$@"
+            fi
+        fi
+    done
+
+    # 如果没有找到合适的 bash，显示错误信息
+    echo "错误: 此脚本需要 Bash 4.0 或更高版本（当前版本: $BASH_VERSION）"
+    echo ""
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "在 macOS 上，请安装 Homebrew bash："
+        echo "  brew install bash"
+    else
+        echo "请升级您的 bash 版本"
+    fi
+    exit 1
+fi
+
 # 检测是否在 WSL 环境中
 IS_WSL=false
 if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null; then
