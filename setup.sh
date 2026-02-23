@@ -573,3 +573,8 @@ fi
 echo ""
 echo "安装完成！"
 echo ""
+echo "提示: 若使用 dockerhub-to-aliyun-acr-sync 技能，请先设置以下环境变量："
+echo "  ALIYUN_ACR_REGISTRY (例如: crpi-xxxx.cn-shanghai.personal.cr.aliyuncs.com/hugopub)"
+echo "  ALIYUN_ACR_USERNAME"
+echo "  ALIYUN_ACR_PASSWORD"
+echo ""

@@ -471,3 +471,8 @@ if (Test-Path $gitignorePath) {
 Write-Host ""
 Write-Host "安装完成！" -ForegroundColor Cyan
 Write-Host ""
+Write-Host "提示: 若使用 dockerhub-to-aliyun-acr-sync 技能，请先设置以下环境变量：" -ForegroundColor Yellow
+Write-Host "  ALIYUN_ACR_REGISTRY (例如: crpi-xxxx.cn-shanghai.personal.cr.aliyuncs.com/hugopub)"
+Write-Host "  ALIYUN_ACR_USERNAME"
+Write-Host "  ALIYUN_ACR_PASSWORD"
+Write-Host ""
