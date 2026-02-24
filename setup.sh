@@ -415,7 +415,7 @@ handle_subdir_links() {
         fi
 
         # 记录需要加入 .gitignore 的条目
-        GITIGNORE_ENTRIES+=("$dir_name/$subdir/")
+        GITIGNORE_ENTRIES+=("$dir_name/$subdir")
     done
 }
 
@@ -510,7 +510,7 @@ for dir in "${DIRS[@]}"; do
     fi
 
     # 记录需要加入 .gitignore 的条目
-    GITIGNORE_ENTRIES+=("$dir/")
+    GITIGNORE_ENTRIES+=("$dir")
 done
 
 # 更新 .gitignore

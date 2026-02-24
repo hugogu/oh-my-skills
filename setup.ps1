@@ -302,7 +302,7 @@ function Handle-SubdirLinks {
         }
 
         # 记录需要加入 .gitignore 的条目
-        $gitignoreEntries += "$DirName/$subdir/"
+        $gitignoreEntries += "$DirName/$subdir"
     }
 
     return $gitignoreEntries
@@ -406,7 +406,7 @@ foreach ($dir in $TargetDirs) {
         Write-Host "[完成] $dir -> $sourcePath" -ForegroundColor Green
     }
 
-    $GitignoreEntries += "$dir/"
+    $GitignoreEntries += "$dir"
 }
 
 # 更新 .gitignore
