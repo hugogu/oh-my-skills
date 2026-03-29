@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# OpenSpec & SpecKit 安装/升级脚本 (macOS / Linux / WSL)
+# OpenSpec、SpecKit 和 Codex 安装/升级脚本 (macOS / Linux / WSL)
 #
 # 用法:
 #   ./install.sh                    # 检查并安装缺失的工具
@@ -13,6 +13,7 @@ set -euo pipefail
 
 # 配置
 OPENSPEC_PACKAGE="@openspec/cli"
+CODEX_PACKAGE="@openai/codex"
 SPECKIT_REPO="https://github.com/github/spec-kit.git"
 
 # 解析参数
@@ -315,7 +316,7 @@ install_uv_tool() {
 main() {
     echo ""
     echo "═══════════════════════════════════════════════════"
-    echo "  OpenSpec & SpecKit 安装脚本"
+    echo "  OpenSpec、SpecKit 和 Codex 安装脚本"
     echo "═══════════════════════════════════════════════════"
     echo ""
 
@@ -359,9 +360,11 @@ main() {
 
     # 获取当前版本
     local openspec_version=$(get_package_version "openspec")
+    local codex_version=$(get_package_version "codex")
     local speckit_version=$(get_package_version "specify")
 
     echo "  openspec: $openspec_version"
+    echo "  codex:    $codex_version"
     echo "  speckit:  $speckit_version"
 
     # 根据模式执行操作
@@ -374,6 +377,11 @@ main() {
             else
                 print_success "openspec 已安装 (v$openspec_version)"
             fi
+            if [ "$codex_version" = "not installed" ]; then
+                print_warning "codex 未安装"
+            else
+                print_success "codex 已安装 (v$codex_version)"
+            fi
             if [ "$speckit_version" = "not installed" ]; then
                 print_warning "specify 未安装"
             else
@@ -382,18 +390,21 @@ main() {
             ;;
         install)
             install_package "$OPENSPEC_PACKAGE" "openspec" "install"
+            install_package "$CODEX_PACKAGE" "codex" "install"
             if [ "$SKIP_SPECKIT" = false ]; then
                 install_uv_tool "specify-cli" "$SPECKIT_REPO" "specify" "install"
             fi
             ;;
         upgrade)
             install_package "$OPENSPEC_PACKAGE" "openspec" "upgrade"
+            install_package "$CODEX_PACKAGE" "codex" "upgrade"
             if [ "$SKIP_SPECKIT" = false ]; then
                 install_uv_tool "specify-cli" "$SPECKIT_REPO" "specify" "upgrade"
             fi
             ;;
         force)
             install_package "$OPENSPEC_PACKAGE" "openspec" "force"
+            install_package "$CODEX_PACKAGE" "codex" "force"
             if [ "$SKIP_SPECKIT" = false ]; then
                 install_uv_tool "specify-cli" "$SPECKIT_REPO" "specify" "force"
             fi
@@ -410,8 +421,10 @@ main() {
     if [ "$MODE" != "check" ]; then
         print_info "最终状态:"
         local final_openspec=$(get_package_version "openspec")
+        local final_codex=$(get_package_version "codex")
         local final_speckit=$(get_package_version "specify")
         echo "  openspec: $final_openspec"
+        echo "  codex:    $final_codex"
         echo "  speckit:  $final_speckit"
         echo ""
     fi
@@ -420,8 +433,10 @@ main() {
     if [ "$MODE" = "install" ] || [ "$MODE" = "force" ]; then
         print_info "下一步:"
         echo "  运行 'openspec init' 初始化配置"
+        echo "  运行 'codex login' 完成 Codex 登录"
         echo "  运行 'specify init' 初始化配置"
-        echo "  或使用 './refresh.sh' 批量初始化"
+        echo "  在项目中运行 './setup.sh .codex' 链接 Codex 技能"
+        echo "  或使用 './refresh.sh' 批量初始化 OpenSpec / SpecKit"
     fi
 
     echo ""

@@ -4,7 +4,7 @@
 #
 # 用法:
 #   ~/ai-settings/setup.sh                    # 链接所有目录
-#   ~/ai-settings/setup.sh .claude .cursor    # 只链接指定目录
+#   ~/ai-settings/setup.sh .claude .cursor .codex    # 只链接指定目录
 #   ~/ai-settings/setup.sh --force            # 强制替换所有目录为符号链接
 #
 # 注意: 在 WSL 上，为了让 Windows 也能识别符号链接，建议：
@@ -138,7 +138,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 #   - .windsurf: 只链接 skills, workflows (保留本地的 rules 目录)
 #   - .github: 只链接 agents, prompts, skills (保留本地的 workflows, issue templates 等)
 #   - .specify: 只链接 scripts, templates (保留本地的 memory, agent-context 目录)
-ALL_DIRS=(.claude .cursor .windsurf .trae .opencode .github .specify)
+#   - .codex: 只链接 skills (保留本地的 config.toml)
+ALL_DIRS=(.claude .cursor .windsurf .trae .opencode .github .specify .codex)
 
 # 本地配置文件列表（这些文件在差异比较时会被忽略，且在符号链接创建后会被保留）
 # 注意：对于子目录链接的目录，配置文件位于父目录本身，不在符号链接中
@@ -146,6 +147,7 @@ LOCAL_CONFIG_FILES=(
     ".claude/settings.local.json"
     ".cursor/settings.local.json"
     ".windsurf/settings.local.json"
+    ".codex/config.toml"
 )
 
 # 如果传入了目录参数，只链接指定的目录；否则链接全部
@@ -352,6 +354,7 @@ declare -A SUBDIR_LINKS=(
     [".windsurf"]="skills workflows"
     [".github"]="agents prompts skills"
     [".specify"]="scripts templates"
+    [".codex"]="skills"
 )
 
 # 处理子目录链接的通用函数

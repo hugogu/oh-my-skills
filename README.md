@@ -1,10 +1,10 @@
 # ai-settings
 
-集中管理 AI 编程助手的工作流和技能文件（OpenSpec、SpecKit、OPSX）。只需克隆一次本仓库，通过符号链接将相关目录映射到各个项目中，避免在每个项目中重复存放相同的文件。
+集中管理 AI 编程助手的工作流和技能文件（OpenSpec、SpecKit、Codex、OPSX）。只需克隆一次本仓库，通过符号链接将相关目录映射到各个项目中，避免在每个项目中重复存放相同的文件。
 
 ## 解决的问题
 
-OpenSpec、SpecKit 等工具会在每个项目中生成配置目录（`.claude/`、`.cursor/`、`.windsurf/`、`.opencode/`、`.trae/`、`.github/`、`.specify/`、`openspec/`），导致：
+OpenSpec、SpecKit、Codex 等工具会在每个项目中生成配置目录（`.claude/`、`.cursor/`、`.windsurf/`、`.opencode/`、`.trae/`、`.github/`、`.specify/`、`.codex/`、`openspec/`），导致：
 
 - 大量完全相同的文件在各仓库中重复存在
 - 上游更新时各项目版本不一致
@@ -21,13 +21,14 @@ OpenSpec、SpecKit 等工具会在每个项目中生成配置目录（`.claude/`
 | `.opencode/`  | OpenCode               | Skills + 命令                  |
 | `.github/`    | GitHub Copilot         | Skills + Prompt 文件           |
 | `.specify/`   | SpecKit                | 模板、脚本、项目规范           |
+| `.codex/`     | Codex CLI              | Skills（保留项目本地 config）   |
 | `openspec/`   | OpenSpec               | 配置文件 (config.yaml)         |
 
 ## 脚本工具
 
 | 脚本          | 用途                                    | 运行位置              |
 |---------------|----------------------------------------|-----------------------|
-| `install.sh`  | 安装/升级 OpenSpec 和 SpecKit 工具      | `~/ai-settings/`      |
+| `install.sh`  | 安装/升级 OpenSpec、SpecKit、Codex CLI  | `~/ai-settings/`      |
 | `refresh.sh`  | 刷新/更新 AI 工具配置文件               | `~/ai-settings/`      |
 | `setup.sh`    | 在项目中创建符号链接                    | 任意项目目录          |
 
@@ -80,8 +81,8 @@ cd /path/to/your-project
 默认链接所有目录。如果只需要部分工具，可以指定目录名：
 
 ```bash
-# 只链接 Claude Code 和 Cursor
-~/ai-settings/setup.sh .claude .cursor
+# 只链接 Claude Code、Cursor 和 Codex
+~/ai-settings/setup.sh .claude .cursor .codex
 
 # 强制替换已存在的目录为符号链接
 ~/ai-settings/setup.sh --force
@@ -99,7 +100,7 @@ C:\Users\$env:USERNAME\ai-settings\setup.ps1
 指定部分目录：
 
 ```powershell
-C:\Users\$env:USERNAME\ai-settings\setup.ps1 -Dirs .claude,.cursor
+C:\Users\$env:USERNAME\ai-settings\setup.ps1 -Dirs .claude,.cursor,.codex
 ```
 
 强制替换已存在的目录为符号链接：
@@ -123,6 +124,8 @@ ln -s ~/ai-settings/.trae .trae
 ln -s ~/ai-settings/.opencode .opencode
 ln -s ~/ai-settings/.github .github
 ln -s ~/ai-settings/.specify .specify
+mkdir -p .codex
+ln -s ~/ai-settings/.codex/skills .codex/skills
 ln -s ~/ai-settings/openspec openspec
 ```
 
@@ -139,6 +142,8 @@ New-Item -ItemType SymbolicLink -Path .trae     -Target C:\Users\$env:USERNAME\a
 New-Item -ItemType SymbolicLink -Path .opencode -Target C:\Users\$env:USERNAME\ai-settings\.opencode
 New-Item -ItemType SymbolicLink -Path .github   -Target C:\Users\$env:USERNAME\ai-settings\.github
 New-Item -ItemType SymbolicLink -Path .specify  -Target C:\Users\$env:USERNAME\ai-settings\.specify
+New-Item -ItemType Directory -Force -Path .codex | Out-Null
+New-Item -ItemType SymbolicLink -Path .codex\skills -Target C:\Users\$env:USERNAME\ai-settings\.codex\skills
 New-Item -ItemType SymbolicLink -Path openspec  -Target C:\Users\$env:USERNAME\ai-settings\openspec
 ```
 
@@ -155,6 +160,8 @@ mklink /D .trae     C:\Users\%USERNAME%\ai-settings\.trae
 mklink /D .opencode C:\Users\%USERNAME%\ai-settings\.opencode
 mklink /D .github   C:\Users\%USERNAME%\ai-settings\.github
 mklink /D .specify  C:\Users\%USERNAME%\ai-settings\.specify
+mkdir .codex
+mklink /D .codex\skills C:\Users\%USERNAME%\ai-settings\.codex\skills
 mklink /D openspec  C:\Users\%USERNAME%\ai-settings\openspec
 ```
 
@@ -170,15 +177,16 @@ mklink /D openspec  C:\Users\%USERNAME%\ai-settings\openspec
 .trae/
 .opencode/
 .specify/
+.codex/skills/
 openspec/
 # .github/ — 仅当项目没有自己的 .github 目录时才添加
 ```
 
 ## 工具安装
 
-### 安装 OpenSpec 和 SpecKit
+### 安装 OpenSpec、SpecKit 和 Codex CLI
 
-本仓库提供了自动化安装脚本，可一键安装或升级 OpenSpec 和 SpecKit 工具。
+本仓库提供了自动化安装脚本，可一键安装或升级 OpenSpec、SpecKit 和 Codex CLI。
 
 #### 基本用法
 
@@ -199,10 +207,11 @@ openspec/
 #### 安装内容
 
 - **OpenSpec** (`@openspec/cli`): 通过 npm 全局安装
+- **Codex CLI** (`@openai/codex`): 通过 npm 全局安装
 - **SpecKit** (`specify-cli`): 通过 uv 从 GitHub 安装
 
 脚本会自动：
-1. 检查 Node.js、npm 是否已安装（OpenSpec 依赖）
+1. 检查 Node.js、npm 是否已安装（OpenSpec / Codex 依赖）
 2. 检查 uv 是否已安装（SpecKit 依赖）
 3. 如果 uv 未安装，会提示是否自动安装
 4. 安装或升级指定的工具
@@ -239,6 +248,7 @@ openspec/
   - OpenCode
   - Windsurf
   - GitHub Copilot
+- **Codex**: 不需要 `init` 步骤；仓库更新后重新运行 `setup.sh .codex` 即可同步最新技能，项目本地 `.codex/config.toml` 会被保留
 
 脚本会自动：
 1. 运行 `openspec init` (需要手动选择工具)
@@ -261,7 +271,7 @@ git pull
 
 ### 更新工具和配置
 
-如果 OpenSpec 或 SpecKit 工具本身有更新：
+如果 OpenSpec、SpecKit 或 Codex CLI 工具本身有更新：
 
 ```bash
 cd ~/ai-settings
@@ -280,10 +290,10 @@ git push
 
 ## 按需使用
 
-不需要链接所有目录，只链接你实际使用的编辑器和工具即可。例如只使用 Claude Code 和 Cursor：
+不需要链接所有目录，只链接你实际使用的编辑器和工具即可。例如只使用 Claude Code、Cursor 和 Codex：
 
 ```bash
-~/ai-settings/setup.sh .claude .cursor
+~/ai-settings/setup.sh .claude .cursor .codex
 ```
 
 ## 自定义 OpenSpec 配置
@@ -298,6 +308,7 @@ cp ~/ai-settings/openspec/config.yaml openspec/config.yaml
 ## 注意事项
 
 - **`.github/` 目录冲突：** 如果项目已有 `.github/` 目录（CI 工作流、Issue 模板等），请只链接子目录（如 `.github/skills/` 和 `.github/prompts/`），不要链接整个 `.github/`。
+- **`.codex/` 目录处理：** 脚本只会接管 `.codex/skills/`，不会覆盖项目自己的 `.codex/config.toml`。
 - **Windows 符号链接权限：** 需要管理员权限或开启开发者模式（设置 -> 系统 -> 高级 -> 开发者模式），否则创建符号链接会失败。
 - **已有目录处理：**
   - 如果目标目录已存在且内容与本仓库相同，脚本会询问是否替换为符号链接

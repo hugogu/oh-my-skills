@@ -1,11 +1,11 @@
 # Installation Scripts
 
-自动安装和升级 OpenSpec 和 SpecKit 的脚本。
+自动安装和升级 OpenSpec、SpecKit 和 Codex 的脚本。
 
 ## 概述
 
 这些脚本帮助你:
-- ✅ 检查 OpenSpec 和 SpecKit 是否已安装
+- ✅ 检查 OpenSpec、SpecKit 和 Codex 是否已安装
 - ✅ 自动安装缺失的工具
 - ✅ 升级已安装的工具到最新版本
 - ✅ 强制重新安装工具
@@ -14,8 +14,8 @@
 ## 前提条件
 
 ### 必需
-- **Node.js** (v14 或更高版本) - 用于安装 OpenSpec
-- **npm** (通常随 Node.js 一起安装) - 用于安装 OpenSpec
+- **Node.js** (v14 或更高版本) - 用于安装 OpenSpec / Codex
+- **npm** (通常随 Node.js 一起安装) - 用于安装 OpenSpec / Codex
 - **uv** (Python 包管理器) - 用于安装 SpecKit
 
 ### 安装 Node.js
@@ -114,7 +114,7 @@ winget install astral-sh.uv
 ```
 
 **行为:**
-- 检查 openspec 和 speckit 是否已安装
+- 检查 openspec、codex 和 speckit 是否已安装
 - 只安装未安装的工具
 - 已安装的工具跳过
 - 显示当前版本和最新版本
@@ -122,7 +122,7 @@ winget install astral-sh.uv
 **输出示例:**
 ```
 ═══════════════════════════════════════════════════
-  OpenSpec & SpecKit 安装脚本
+  OpenSpec、SpecKit 和 Codex 安装脚本
 ═══════════════════════════════════════════════════
 
 ℹ 检查依赖...
@@ -131,6 +131,7 @@ winget install astral-sh.uv
 
 ℹ 检查工具状态...
   openspec: not installed
+  codex:    0.117.0
   speckit:  1.2.3
 
 ────────────────────────────────────────
@@ -210,10 +211,11 @@ winget install astral-sh.uv
 | 工具 | 安装方式 | 命令 | 用途 |
 |------|----------|------|------|
 | OpenSpec | npm (`@openspec/cli`) | `openspec` | OpenSpec CLI 工具 |
+| Codex | npm (`@openai/codex`) | `codex` | Codex CLI 工具 |
 | SpecKit | uv (`specify-cli` from GitHub) | `specify` | SpecKit CLI 工具 |
 
 **注意:**
-- OpenSpec 通过 npm 全局安装
+- OpenSpec 和 Codex 通过 npm 全局安装
 - SpecKit 通过 uv tool 从 GitHub 仓库安装
 
 ## 配置
@@ -225,6 +227,9 @@ winget install astral-sh.uv
 # OpenSpec (npm 包)
 OPENSPEC_PACKAGE="@openspec/cli"
 
+# Codex (npm 包)
+CODEX_PACKAGE="@openai/codex"
+
 # SpecKit (uv tool from GitHub)
 SPECKIT_REPO="https://github.com/github/spec-kit.git"
 ```
@@ -233,6 +238,9 @@ SPECKIT_REPO="https://github.com/github/spec-kit.git"
 ```powershell
 # OpenSpec (npm 包)
 $OpenSpecPackage = "@openspec/cli"
+
+# Codex (npm 包)
+$CodexPackage = "@openai/codex"
 
 # SpecKit (uv tool from GitHub)
 $SpecKitRepo = "https://github.com/github/spec-kit.git"
@@ -286,7 +294,7 @@ npm config set proxy http://proxy.example.com:8080
 **问题:** `当前版本: unknown` 或 `最新版本: unknown`
 
 **解决:**
-- 检查命令是否正确安装: `which openspec` / `which speckit`
+- 检查命令是否正确安装: `which openspec` / `which codex` / `which speckit`
 - 检查命令是否有 `--version` 选项
 - 检查网络连接（获取最新版本需要访问 npm registry）
 

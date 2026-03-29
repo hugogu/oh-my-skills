@@ -4,7 +4,7 @@
 
 ## 概述
 
-这些脚本帮助你自动运行 `openspec init` 和 `specify init` 来更新 ai-settings 仓库中的所有工具配置。
+这些脚本帮助你自动运行 `openspec init` 和 `specify init` 来更新 ai-settings 仓库中的所有工具配置。Codex CLI 当前没有对应的 `init` 流程，因此它的更新通过 `setup.sh .codex` 或 `setup.ps1 -Dirs .codex` 同步。
 
 ## 使用方法
 

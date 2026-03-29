@@ -3,7 +3,7 @@
 #
 # 用法:
 #   C:\Users\<用户名>\ai-settings\setup.ps1                     # 链接所有目录
-#   C:\Users\<用户名>\ai-settings\setup.ps1 -Dirs .claude,.cursor  # 只链接指定目录
+#   C:\Users\<用户名>\ai-settings\setup.ps1 -Dirs .claude,.cursor,.codex  # 只链接指定目录
 #
 # 注意: 需要管理员权限或已开启开发者模式
 #
@@ -27,14 +27,16 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 #   - .windsurf: 只链接 skills, workflows (保留本地的 rules 目录)
 #   - .github: 只链接 agents, prompts, skills (保留本地的 workflows, issue templates 等)
 #   - .specify: 只链接 scripts, templates (保留本地的 memory, agent-context 目录)
-$AllDirs = @(".claude", ".cursor", ".windsurf", ".trae", ".opencode", ".github", ".specify")
+#   - .codex: 只链接 skills (保留本地的 config.toml)
+$AllDirs = @(".claude", ".cursor", ".windsurf", ".trae", ".opencode", ".github", ".specify", ".codex")
 
 # 本地配置文件列表（这些文件在差异比较时会被忽略，且在符号链接创建后会被保留）
 # 注意：对于子目录链接的目录，配置文件位于父目录本身，不在符号链接中
 $LocalConfigFiles = @(
     ".claude/settings.local.json",
     ".cursor/settings.local.json",
-    ".windsurf/settings.local.json"
+    ".windsurf/settings.local.json",
+    ".codex/config.toml"
 )
 
 # 如果传入了参数，只链接指定的目录；否则链接全部
@@ -234,6 +236,7 @@ $SubdirLinks = @{
     ".windsurf" = @("skills", "workflows")
     ".github" = @("agents", "prompts", "skills")
     ".specify" = @("scripts", "templates")
+    ".codex" = @("skills")
 }
 
 # 处理子目录链接的通用函数

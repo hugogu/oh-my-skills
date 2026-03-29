@@ -1,5 +1,5 @@
 #
-# OpenSpec & SpecKit 安装/升级脚本 (Windows PowerShell)
+# OpenSpec、SpecKit 和 Codex 安装/升级脚本 (Windows PowerShell)
 #
 # 用法:
 #   .\install.ps1                   # 检查并安装缺失的工具
@@ -20,6 +20,7 @@ $ErrorActionPreference = "Stop"
 
 # 配置
 $OpenSpecPackage = "@openspec/cli"
+$CodexPackage = "@openai/codex"
 $SpecKitRepo = "https://github.com/github/spec-kit.git"
 
 # 显示帮助
@@ -377,7 +378,7 @@ function Install-UvTool {
 function Main {
     Write-Host ""
     Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
-    Write-Host "  OpenSpec & SpecKit 安装脚本" -ForegroundColor Cyan
+    Write-Host "  OpenSpec、SpecKit 和 Codex 安装脚本" -ForegroundColor Cyan
     Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
     Write-Host ""
 
@@ -424,9 +425,11 @@ function Main {
 
     # 获取当前版本
     $openspecVersion = Get-PackageVersion -Command "openspec"
+    $codexVersion = Get-PackageVersion -Command "codex"
     $speckitVersion = Get-PackageVersion -Command "specify"
 
     Write-Host "  openspec: $openspecVersion"
+    Write-Host "  codex:    $codexVersion"
     Write-Host "  speckit:  $speckitVersion"
 
     # 根据模式执行操作
@@ -440,6 +443,12 @@ function Main {
             else {
                 Write-Success "openspec 已安装 (v$openspecVersion)"
             }
+            if ($codexVersion -eq "not installed") {
+                Write-Warning "codex 未安装"
+            }
+            else {
+                Write-Success "codex 已安装 (v$codexVersion)"
+            }
             if ($speckitVersion -eq "not installed") {
                 Write-Warning "specify 未安装"
             }
@@ -449,18 +458,21 @@ function Main {
         }
         "install" {
             Install-Package -Package $OpenSpecPackage -Command "openspec" -Action "install"
+            Install-Package -Package $CodexPackage -Command "codex" -Action "install"
             if (-not $script:SkipSpecKit) {
                 Install-UvTool -ToolName "specify-cli" -Repo $SpecKitRepo -Command "specify" -Action "install"
             }
         }
         "upgrade" {
             Install-Package -Package $OpenSpecPackage -Command "openspec" -Action "upgrade"
+            Install-Package -Package $CodexPackage -Command "codex" -Action "upgrade"
             if (-not $script:SkipSpecKit) {
                 Install-UvTool -ToolName "specify-cli" -Repo $SpecKitRepo -Command "specify" -Action "upgrade"
             }
         }
         "force" {
             Install-Package -Package $OpenSpecPackage -Command "openspec" -Action "force"
+            Install-Package -Package $CodexPackage -Command "codex" -Action "force"
             if (-not $script:SkipSpecKit) {
                 Install-UvTool -ToolName "specify-cli" -Repo $SpecKitRepo -Command "specify" -Action "force"
             }
@@ -477,8 +489,10 @@ function Main {
     if ($Mode -ne "check") {
         Write-Info "最终状态:"
         $finalOpenspec = Get-PackageVersion -Command "openspec"
+        $finalCodex = Get-PackageVersion -Command "codex"
         $finalSpeckit = Get-PackageVersion -Command "specify"
         Write-Host "  openspec: $finalOpenspec"
+        Write-Host "  codex:    $finalCodex"
         Write-Host "  speckit:  $finalSpeckit"
         Write-Host ""
     }
@@ -487,8 +501,10 @@ function Main {
     if ($Mode -eq "install" -or $Mode -eq "force") {
         Write-Info "下一步:"
         Write-Host "  运行 'openspec init' 初始化配置"
+        Write-Host "  运行 'codex login' 完成 Codex 登录"
         Write-Host "  运行 'specify init' 初始化配置"
-        Write-Host "  或使用 '.\refresh.ps1' 批量初始化"
+        Write-Host "  在项目中运行 '.\setup.ps1 -Dirs .codex' 链接 Codex 技能"
+        Write-Host "  或使用 '.\refresh.ps1' 批量初始化 OpenSpec / SpecKit"
     }
 
     Write-Host ""
