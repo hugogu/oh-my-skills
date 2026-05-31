@@ -353,6 +353,12 @@ ROOT_SYMLINKS=(
     "workflows:.specify/workflows"
 )
 
+# 根目录级别的文件符号链接
+# 格式: "链接名:源文件路径"
+ROOT_FILE_SYMLINKS=(
+    "AGENTS.md:AGENTS.md"
+)
+
 # 创建根目录级别的符号链接
 handle_root_symlinks() {
     for link_def in "${ROOT_SYMLINKS[@]}"; do
@@ -389,6 +395,47 @@ handle_root_symlinks() {
                 echo "[跳过] $link_name — 目录已存在（使用 --force 强制替换）"
             fi
         # 目标不存在，创建符号链接
+        else
+            create_symlink "$source_path" "$link_path"
+            echo "[完成] $link_name -> $source_path"
+        fi
+
+        # 记录需要加入 .gitignore 的条目
+        GITIGNORE_ENTRIES+=("$link_name")
+    done
+
+    # 处理根目录级别的文件符号链接
+    for link_def in "${ROOT_FILE_SYMLINKS[@]}"; do
+        local link_name="${link_def%%:*}"
+        local source="${link_def##*:}"
+        local source_path="$SCRIPT_DIR/$source"
+        local link_path="./$link_name"
+
+        # 检查源文件是否存在
+        if [ ! -f "$source_path" ]; then
+            echo "[跳过] $link_name — 源文件不存在: $source_path"
+            continue
+        fi
+
+        # 如果目标已经是符号链接
+        if [ -L "$link_path" ]; then
+            if [ "$IS_WSL" = true ] && ! is_windows_symlink "$link_path"; then
+                echo "[修复] $link_name — 转换为 Windows 兼容符号链接"
+                rm -f "$link_path"
+                create_symlink "$source_path" "$link_path"
+                echo "[完成] $link_name -> $source_path （已修复）"
+            else
+                echo "[已有] $link_name — 符号链接已存在"
+            fi
+        elif [ -e "$link_path" ]; then
+            if [ "$FORCE" = true ]; then
+                echo "[强制] $link_name — 替换为符号链接"
+                rm -f "$link_path"
+                create_symlink "$source_path" "$link_path"
+                echo "[完成] $link_name -> $source_path"
+            else
+                echo "[跳过] $link_name — 文件已存在（使用 --force 强制替换）"
+            fi
         else
             create_symlink "$source_path" "$link_path"
             echo "[完成] $link_name -> $source_path"
